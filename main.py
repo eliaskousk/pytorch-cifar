@@ -68,7 +68,7 @@ def main():
 
     dataloader_kwargs = {
         "batch_size": params["bs"],
-        "drop_last": True,
+        "drop_last": False,
         "num_workers": 2,
         "shuffle": True,
         "worker_init_fn": _seed_worker,
