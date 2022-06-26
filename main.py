@@ -174,7 +174,7 @@ def main():
     run.stop()
 
 def train(run, epoch, device, trainloader, net, criterion, optimizer):
-    print('\nEpoch: %d' % epoch + 1)
+    print('\nEpoch: %d' % (epoch + 1))
     train_loss = 0
     correct = 0
     total = 0
