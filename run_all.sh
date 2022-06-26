@@ -1,61 +1,81 @@
 #!/usr/bin/env bash
 
 #
-# With learning rate scheduler
+# ResNet
 #
 
-python3 main.py --model="vgg11"
-python3 main.py --model="vgg11" --bs=128
-python3 main.py --model="pt-vgg11"
-python3 main.py --model="pt-vgg11" --bs=128
-python3 main.py --model="vgg16"
-python3 main.py --model="vgg16" --bs=128
-python3 main.py --model="pt-vgg16"
-python3 main.py --model="pt-vgg16" --bs=128
-python3 main.py --model="vgg19"
-python3 main.py --model="vgg19" --bs=128
-python3 main.py --model="pt-vgg19"
-python3 main.py --model="pt-vgg19" --bs=128
+python3 main.py --model="resnet18" --bs=512
+python3 main.py --model="resnet18" --bs=1024
+python3 main.py --model="resnet18" --bs=2048
+python3 main.py --model="resnet18" --bs=4096
+python3 main.py --model="resnet18" --bs=8192
 
-python3 main.py --model="resnet18"
-python3 main.py --model="resnet18" --bs=128
-python3 main.py --model="pt-resnet18"
-python3 main.py --model="pt-resnet18" --bs=128
-python3 main.py --model="resnet34"
-python3 main.py --model="resnet34" --bs=128
-python3 main.py --model="pt-resnet34"
-python3 main.py --model="pt-resnet34"  --bs=128
-python3 main.py --model="resnet50"
-python3 main.py --model="resnet50" --bs=128
-python3 main.py --model="pt-resnet50"
-python3 main.py --model="pt-resnet50" --bs=128
+python3 main.py --model="resnet34" --bs=512
+python3 main.py --model="resnet34" --bs=1024
+python3 main.py --model="resnet34" --bs=2048
+python3 main.py --model="resnet34" --bs=4096
+python3 main.py --model="resnet34" --bs=8192
+
+python3 main.py --model="resnet50" --bs=512
+python3 main.py --model="resnet50" --bs=1024
+python3 main.py --model="resnet50" --bs=2048
+python3 main.py --model="resnet50" --bs=4096
+python3 main.py --model="resnet50" --bs=8192
+
+python3 main.py --model="resnet18" --nolrs --bs=512
+python3 main.py --model="resnet18" --nolrs --bs=1024
+python3 main.py --model="resnet18" --nolrs --bs=2048
+python3 main.py --model="resnet18" --nolrs --bs=4096
+python3 main.py --model="resnet18" --nolrs --bs=8192
+
+python3 main.py --model="resnet34" --nolrs --bs=512
+python3 main.py --model="resnet34" --nolrs --bs=1024
+python3 main.py --model="resnet34" --nolrs --bs=2048
+python3 main.py --model="resnet34" --nolrs --bs=4096
+python3 main.py --model="resnet34" --nolrs --bs=8192
+
+python3 main.py --model="resnet50" --nolrs --bs=512
+python3 main.py --model="resnet50" --nolrs --bs=1024
+python3 main.py --model="resnet50" --nolrs --bs=2048
+python3 main.py --model="resnet50" --nolrs --bs=4096
+python3 main.py --model="resnet50" --nolrs --bs=8192
 
 #
-# Without learning rate scheduler
+# VGG
 #
 
-python3 main.py --model="vgg11" --nolrs
-python3 main.py --model="vgg11" --bs=128 --nolrs
-python3 main.py --model="pt-vgg11" --nolrs
-python3 main.py --model="pt-vgg11" --bs=128 --nolrs
-python3 main.py --model="vgg16" --nolrs
-python3 main.py --model="vgg16" --bs=128 --nolrs
-python3 main.py --model="pt-vgg16" --nolrs
-python3 main.py --model="pt-vgg16" --bs=128 --nolrs
-python3 main.py --model="vgg19" --nolrs
-python3 main.py --model="vgg19" --bs=128 --nolrs
-python3 main.py --model="pt-vgg19" --nolrs
-python3 main.py --model="pt-vgg19" --bs=128 --nolrs
+python3 main.py --model="vgg11" --bs=512
+python3 main.py --model="vgg11" --bs=1024
+python3 main.py --model="vgg11" --bs=2048
+python3 main.py --model="vgg11" --bs=4096
+python3 main.py --model="vgg11" --bs=8192
 
-python3 main.py --model="resnet18" --nolrs
-python3 main.py --model="resnet18" --bs=128 --nolrs
-python3 main.py --model="pt-resnet18" --nolrs
-python3 main.py --model="pt-resnet18" --bs=128 --nolrs
-python3 main.py --model="resnet34" --nolrs
-python3 main.py --model="resnet34" --bs=128 --nolrs
-python3 main.py --model="pt-resnet34" --nolrs
-python3 main.py --model="pt-resnet34"  --bs=128 --nolrs
-python3 main.py --model="resnet50" --nolrs
-python3 main.py --model="resnet50" --bs=128 --nolrs
-python3 main.py --model="pt-resnet50" --nolrs
-python3 main.py --model="pt-resnet50" --bs=128 --nolrs
+python3 main.py --model="vgg16" --bs=512
+python3 main.py --model="vgg16" --bs=1024
+python3 main.py --model="vgg16" --bs=2048
+python3 main.py --model="vgg16" --bs=4096
+python3 main.py --model="vgg16" --bs=8192
+
+python3 main.py --model="vgg19" --bs=512
+python3 main.py --model="vgg19" --bs=1024
+python3 main.py --model="vgg19" --bs=2048
+python3 main.py --model="vgg19" --bs=4096
+python3 main.py --model="vgg19" --bs=8192
+
+python3 main.py --model="vgg11" --nolrs --bs=512
+python3 main.py --model="vgg11" --nolrs --bs=1024
+python3 main.py --model="vgg11" --nolrs --bs=2048
+python3 main.py --model="vgg11" --nolrs --bs=4096
+python3 main.py --model="vgg11" --nolrs --bs=8192
+
+python3 main.py --model="vgg16" --nolrs --bs=512
+python3 main.py --model="vgg16" --nolrs --bs=1024
+python3 main.py --model="vgg16" --nolrs --bs=2048
+python3 main.py --model="vgg16" --nolrs --bs=4096
+python3 main.py --model="vgg16" --nolrs --bs=8192
+
+python3 main.py --model="vgg19" --nolrs --bs=512
+python3 main.py --model="vgg19" --nolrs --bs=1024
+python3 main.py --model="vgg19" --nolrs --bs=2048
+python3 main.py --model="vgg19" --nolrs --bs=4096
+python3 main.py --model="vgg19" --nolrs --bs=8192
