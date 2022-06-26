@@ -26,6 +26,7 @@ def main():
     run = neptune.init(
         project="eliaskousk/CIFAR-10-GCP",
         api_token="eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLm5lcHR1bmUuYWkiLCJhcGlfdXJsIjoiaHR0cHM6Ly9hcHAubmVwdHVuZS5haSIsImFwaV9rZXkiOiIwMzRhZmQ3YS05OWFlLTQ2ODUtYTMwYS1kYmZlMTg5NGQwMDIifQ==",
+        capture_stdout=False
     )
 
     parser = argparse.ArgumentParser(description='PyTorch CIFAR10 Training')
