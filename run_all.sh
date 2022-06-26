@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+#
+# With learning rate scheduler
+#
+
 python3 main.py --model="vgg11"
 python3 main.py --model="vgg11" --bs=128
 python3 main.py --model="pt-vgg11"
@@ -25,3 +29,33 @@ python3 main.py --model="resnet50"
 python3 main.py --model="resnet50" --bs=128
 python3 main.py --model="pt-resnet50"
 python3 main.py --model="pt-resnet50" --bs=128
+
+#
+# Without learning rate scheduler
+#
+
+python3 main.py --model="vgg11" --nolrs
+python3 main.py --model="vgg11" --bs=128 --nolrs
+python3 main.py --model="pt-vgg11" --nolrs
+python3 main.py --model="pt-vgg11" --bs=128 --nolrs
+python3 main.py --model="vgg16" --nolrs
+python3 main.py --model="vgg16" --bs=128 --nolrs
+python3 main.py --model="pt-vgg16" --nolrs
+python3 main.py --model="pt-vgg16" --bs=128 --nolrs
+python3 main.py --model="vgg19" --nolrs
+python3 main.py --model="vgg19" --bs=128 --nolrs
+python3 main.py --model="pt-vgg19" --nolrs
+python3 main.py --model="pt-vgg19" --bs=128 --nolrs
+
+python3 main.py --model="resnet18" --nolrs
+python3 main.py --model="resnet18" --bs=128 --nolrs
+python3 main.py --model="pt-resnet18" --nolrs
+python3 main.py --model="pt-resnet18" --bs=128 --nolrs
+python3 main.py --model="resnet34" --nolrs
+python3 main.py --model="resnet34" --bs=128 --nolrs
+python3 main.py --model="pt-resnet34" --nolrs
+python3 main.py --model="pt-resnet34"  --bs=128 --nolrs
+python3 main.py --model="resnet50" --nolrs
+python3 main.py --model="resnet50" --bs=128 --nolrs
+python3 main.py --model="pt-resnet50" --nolrs
+python3 main.py --model="pt-resnet50" --bs=128 --nolrs

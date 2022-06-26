@@ -34,6 +34,7 @@ def main():
     parser.add_argument('--epochs', default=200, type=int, help='epochs')
     parser.add_argument('--bs', default=256, type=int, help='batch size')
     parser.add_argument('--lr', default=0.1, type=float, help='learning rate')
+    parser.add_argument('--nolrs', '-nolrs', action='store_true', help='do not use the learning rate scheduler')
     parser.add_argument('--resume', '-r', action='store_true', help='resume from checkpoint')
     args = parser.parse_args()
 
@@ -45,6 +46,7 @@ def main():
         "epochs": args.epochs,
         "bs": args.bs,
         "lr": args.lr,
+        "use lr scheduler": not args.nolrs,
         "num_classes": 10,
     }
     run["parameters"] = params
@@ -183,12 +185,15 @@ def main():
 
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.SGD(net.parameters(), lr=params["lr"], momentum=0.9, weight_decay=5e-4)
-    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=params["epochs"])
+    if not args.nolrs:
+        print("Will use the CosineAnnealingLR learning rate scheduler")
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=params["epochs"])
 
     for epoch in range(start_epoch, start_epoch + params["epochs"]):
         train(run, epoch, device, trainloader, net, criterion, optimizer)
         test(run, epoch, device, testloader, net, criterion)
-        scheduler.step()
+        if not args.nolrs:
+            scheduler.step()
 
     run.stop()
 
