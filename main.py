@@ -76,44 +76,44 @@ def main():
 
     # Data
     print('==> Preparing data..')
-    # transform_train = transforms.Compose([
-    #     transforms.RandomCrop(32, padding=4),
-    #     transforms.RandomHorizontalFlip(),
-    #     transforms.ToTensor(),
-    #     transforms.Normalize((0.4914, 0.4822, 0.4465),
-    #                          (0.2023, 0.1994, 0.2010)),
-    # ])
+    transform_train = transforms.Compose([
+        transforms.RandomCrop(32, padding=4),
+        transforms.RandomHorizontalFlip(),
+        transforms.ToTensor(),
+        transforms.Normalize((0.4914, 0.4822, 0.4465),
+                             (0.2023, 0.1994, 0.2010)),
+    ])
 
-    transform_train = transforms.Compose(
-        [
-            transforms.ToTensor(),
-            transforms.ToPILImage(),
-            transforms.Pad(4, padding_mode="reflect"),
-            transforms.RandomCrop(32),
-            transforms.RandomHorizontalFlip(),
-            transforms.ToTensor(),
-            transforms.Normalize(
-                mean=[x / 255.0 for x in [125.3, 123.0, 113.9]],
-                std=[x / 255.0 for x in [63.0, 62.1, 66.7]],
-            ),
-        ]
-    )
+    # transform_train = transforms.Compose(
+    #     [
+    #         transforms.ToTensor(),
+    #         transforms.ToPILImage(),
+    #         transforms.Pad(4, padding_mode="reflect"),
+    #         transforms.RandomCrop(32),
+    #         transforms.RandomHorizontalFlip(),
+    #         transforms.ToTensor(),
+    #         transforms.Normalize(
+    #             mean=[x / 255.0 for x in [125.3, 123.0, 113.9]],
+    #             std=[x / 255.0 for x in [63.0, 62.1, 66.7]],
+    #         ),
+    #     ]
+    # )
 
-    # transform_test = transforms.Compose([
-    #     transforms.ToTensor(),
-    #     transforms.Normalize((0.4914, 0.4822, 0.4465),
-    #                          (0.2023, 0.1994, 0.2010)),
-    # ])
+    transform_test = transforms.Compose([
+        transforms.ToTensor(),
+        transforms.Normalize((0.4914, 0.4822, 0.4465),
+                             (0.2023, 0.1994, 0.2010)),
+    ])
 
-    transform_test = transforms.Compose(
-        [
-            transforms.ToTensor(),
-            transforms.Normalize(
-                mean=[x / 255.0 for x in [125.3, 123.0, 113.9]],
-                std=[x / 255.0 for x in [63.0, 62.1, 66.7]],
-            ),
-        ]
-    )
+    # transform_test = transforms.Compose(
+    #     [
+    #         transforms.ToTensor(),
+    #         transforms.Normalize(
+    #             mean=[x / 255.0 for x in [125.3, 123.0, 113.9]],
+    #             std=[x / 255.0 for x in [63.0, 62.1, 66.7]],
+    #         ),
+    #     ]
+    # )
 
     trainset = torchvision.datasets.CIFAR10(root='./data', train=True, download=True, transform=transform_train)
     trainloader = torch.utils.data.DataLoader(trainset, **dataloader_kwargs)
