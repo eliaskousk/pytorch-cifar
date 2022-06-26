@@ -29,6 +29,9 @@ def main():
     )
 
     parser = argparse.ArgumentParser(description='PyTorch CIFAR10 Training')
+    parser.add_argument('--model', default="vgg11", type=str, help='model')
+    parser.add_argument('--epochs', default=200, type=int, help='epochs')
+    parser.add_argument('--bs', default=256, type=int, help='batch size')
     parser.add_argument('--lr', default=0.1, type=float, help='learning rate')
     parser.add_argument('--resume', '-r', action='store_true', help='resume from checkpoint')
     args = parser.parse_args()
@@ -37,9 +40,10 @@ def main():
     start_epoch = 0  # start from epoch 0 or last checkpoint epoch
 
     params = {
-        "epochs": 200,
-        "lr": args.lr, # 1e-2,
-        "bs": 256, # 128,
+        "model": args.model,
+        "epochs": args.epochs,
+        "bs": args.bs,
+        "lr": args.lr,
         "num_classes": 10,
     }
     run["parameters"] = params
@@ -119,20 +123,34 @@ def main():
     testloader = torch.utils.data.DataLoader(testset, **dataloader_kwargs)
 
     # Model
-    print('==> Building model..')
-    net = VGG('VGG11')
-    # net = ptmodels.vgg11(pretrained=False, num_classes=10)
-    # net = VGG('VGG16')
-    # net = ptmodels.vgg16(pretrained=False, num_classes=10)
-    # net = VGG('VGG19')
-    # net = ptmodels.vgg19(pretrained=False, num_classes=10)
-
-    # net = ResNet18()
-    # net = ptmodels.resnet18(pretrained=False, num_classes=10)
-    # net = ResNet34()
-    # net = ptmodels.resnet34(pretrained=False, num_classes=10)
-    # net = ResNet50()
-    # net = ptmodels.resnet150(pretrained=False, num_classes=10)
+    print(f'==> Building model {args.model}..')
+    if args.model == "vgg11":
+        net = VGG('VGG11')
+    elif args.model == "pt-vgg11":
+        net = ptmodels.vgg11(pretrained=False, num_classes=10)
+    elif args.model == "vgg16":
+        net = VGG('VGG16')
+    elif args.model == "pt-vgg16":
+        net = ptmodels.vgg16(pretrained=False, num_classes=10)
+    elif args.model == "vgg19":
+        net = VGG('VGG19')
+    elif args.model == "pt-vgg19":
+        net = ptmodels.vgg19(pretrained=False, num_classes=10)
+    elif args.model == "resnet18":
+        net = ResNet18()
+    elif args.model == "pt-resnet18":
+        net = ptmodels.resnet18(pretrained=False, num_classes=10)
+    elif args.model == "resnet34":
+        net = ResNet34()
+    elif args.model == "pt-resnet34":
+        net = ptmodels.resnet34(pretrained=False, num_classes=10)
+    elif args.model == "resnet50":
+        net = ResNet50()
+    elif args.model == "pt-resnet50":
+        net = ptmodels.resnet50(pretrained=False, num_classes=10)
+    else:
+        print(f"Model {args.model} is not supported, will now exit.")
+        exit(0)
 
     # net = PreActResNet18()
     # net = GoogLeNet()
@@ -179,6 +197,7 @@ def train(run, epoch, device, trainloader, net, criterion, optimizer):
     correct = 0
     total = 0
     acc = 0.0
+    loss_per_batch = 0.0
 
     net.train()
     for batch_idx, (inputs, targets) in enumerate(trainloader):
@@ -194,6 +213,7 @@ def train(run, epoch, device, trainloader, net, criterion, optimizer):
         total += targets.size(0)
         correct += predicted.eq(targets).sum().item()
         acc = correct / total
+        loss_per_batch = train_loss / (batch_idx + 1)
 
         # run["train/batch/loss"].log(loss)
         # run["train/batch/acc"].log(acc)
@@ -201,9 +221,9 @@ def train(run, epoch, device, trainloader, net, criterion, optimizer):
         # run["train/batch/epoch"].log(epoch + 1)
 
         progress_bar(batch_idx, len(trainloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
-                     % (train_loss / (batch_idx + 1), 100. * correct / total, correct, total))
+                     % (loss_per_batch, 100. * acc, correct, total))
 
-    run["train/epoch/loss"].log(train_loss)
+    run["train/epoch/loss"].log(loss_per_batch)
     run["train/epoch/acc"].log(acc)
     run["train/epoch/epoch"].log(epoch + 1)
 
@@ -212,6 +232,8 @@ def test(run, epoch, device, testloader, net, criterion):
     test_loss = 0
     correct = 0
     total = 0
+    acc = 0.0
+    loss_per_batch = 0.0
 
     net.eval()
     with torch.no_grad():
@@ -224,17 +246,18 @@ def test(run, epoch, device, testloader, net, criterion):
             _, predicted = outputs.max(1)
             total += targets.size(0)
             correct += predicted.eq(targets).sum().item()
+            acc = correct / total
+            loss_per_batch = test_loss / (batch_idx + 1)
 
             progress_bar(batch_idx, len(testloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
-                         % (test_loss / (batch_idx + 1), 100.*correct / total, correct, total))
+                         % (loss_per_batch, 100.* acc, correct, total))
 
-    acc = correct / total
-    run["valid/loss"].log(test_loss)
+    run["valid/loss"].log(test_loss / (batch_idx + 1))
     run["valid/acc"].log(acc)
     run["valid/epoch"].log(epoch + 1)
 
     # Save checkpoint.
-    acc = 100.*correct / total
+    acc = 100. * acc
     if acc > best_acc:
         print('Saving..')
         state = {
