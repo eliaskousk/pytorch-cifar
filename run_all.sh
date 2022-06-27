@@ -38,6 +38,8 @@ echo "Shutdown Will Happen In 60 seconds!"
 sudo shutdown
 echo "Execute 'sudo shutdown -c' to cancel!"
 
+exit
+
 #
 # ResNet
 #
