@@ -33,7 +33,7 @@ def main():
     parser = argparse.ArgumentParser(description='PyTorch CIFAR10 Training')
     parser.add_argument('--model', default="vgg11", type=str, help='model')
     parser.add_argument('--epochs', default=200, type=int, help='epochs')
-    parser.add_argument('--bs', default=256, type=int, help='batch size')
+    parser.add_argument('--bs', default=128, type=int, help='batch size')
     parser.add_argument('--lr', default=0.1, type=float, help='learning rate')
     parser.add_argument('--nolrs', '-nolrs', action='store_true', help='do not use the learning rate scheduler')
     parser.add_argument('--resume', '-r', action='store_true', help='resume from checkpoint')
@@ -128,7 +128,11 @@ def main():
 
     # Model
     print(f'==> Building model {args.model}..')
-    if args.model == "vgg11":
+    if args.model == "simplecnn":
+        net = SimpleCNN()
+    elif args.model == "moderatecnn":
+        net = ModerateCNN()
+    elif args.model == "vgg11":
         net = VGG('VGG11')
     elif args.model == "pt-vgg11":
         net = ptmodels.vgg11(pretrained=False, num_classes=10)
