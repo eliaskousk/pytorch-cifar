@@ -1,6 +1,25 @@
 #!/usr/bin/env bash
 
 #
+# ResNet18
+#
+
+python3 main.py --model="resnet18" --nolrs --bs=4096
+python3 main.py --model="resnet18" --nolrs --bs=2048
+python3 main.py --model="resnet18" --nolrs --bs=1024
+python3 main.py --model="resnet18" --nolrs --bs=512
+python3 main.py --model="resnet18" --nolrs --bs=256
+python3 main.py --model="resnet18" --nolrs --bs=128
+
+echo "Shutdown Will Initiate In 60 seconds!"
+sleep 60
+echo "Shutdown Will Happen In 60 seconds!"
+sudo shutdown
+echo "Execute 'sudo shutdown -c' to cancel!"
+
+exit
+
+#
 # SimpleCNN & ModerateCNN
 #
 

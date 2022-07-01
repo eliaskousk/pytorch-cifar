@@ -189,10 +189,13 @@ def main():
         start_epoch = checkpoint['epoch']
 
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.SGD(net.parameters(), lr=params["lr"], momentum=0.9, weight_decay=5e-4)
+
     if not args.nolrs:
+        optimizer = optim.SGD(net.parameters(), lr=params["lr"], momentum=0.9, weight_decay=5e-4)
         print("Will use the CosineAnnealingLR learning rate scheduler")
         scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=params["epochs"])
+    else:
+        optimizer = optim.SGD(net.parameters(), lr=params["lr"])
 
     for epoch in range(start_epoch, start_epoch + params["epochs"]):
         train(run, epoch, device, trainloader, net, criterion, optimizer)
