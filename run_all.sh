@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-python3 main.py --model="moderatecnn" --nolrs --bs=4096
-
 python3 main.py --model="simplecnn" --nolrs --bs=4096
 python3 main.py --model="simplecnn" --nolrs --bs=2048
 python3 main.py --model="simplecnn" --nolrs --bs=1024
@@ -15,6 +13,20 @@ python3 main.py --model="simplecnn" --bs=1024
 python3 main.py --model="simplecnn" --bs=512
 python3 main.py --model="simplecnn" --bs=256
 python3 main.py --model="simplecnn" --bs=128
+
+python3 main.py --model="moderatecnn" --nolrs --bs=4096
+python3 main.py --model="moderatecnn" --nolrs --bs=2048
+python3 main.py --model="moderatecnn" --nolrs --bs=1024
+python3 main.py --model="moderatecnn" --nolrs --bs=512
+python3 main.py --model="moderatecnn" --nolrs --bs=256
+python3 main.py --model="moderatecnn" --nolrs --bs=128
+
+python3 main.py --model="moderatecnn" --bs=4096
+python3 main.py --model="moderatecnn" --bs=2048
+python3 main.py --model="moderatecnn" --bs=1024
+python3 main.py --model="moderatecnn" --bs=512
+python3 main.py --model="moderatecnn" --bs=256
+python3 main.py --model="moderatecnn" --bs=128
 
 echo "Shutdown Will Initiate In 60 seconds!"
 sleep 60
