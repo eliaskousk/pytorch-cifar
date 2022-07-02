@@ -268,7 +268,7 @@ def test(run, epoch, device, testloader, net, criterion):
             progress_bar(batch_idx, len(testloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
                          % (loss_per_batch, 100.* acc, correct, total))
 
-    run["valid/loss"].log(test_loss / (batch_idx + 1))
+    run["valid/loss"].log(loss_per_batch)
     run["valid/acc"].log(acc)
     run["valid/epoch"].log(epoch + 1)
 

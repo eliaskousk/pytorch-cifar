@@ -1,15 +1,7 @@
 #!/usr/bin/env bash
 
-#
-# ResNet18
-#
-
-python3 main.py --model="resnet18" --nolrs --bs=4096
-python3 main.py --model="resnet18" --nolrs --bs=2048
-python3 main.py --model="resnet18" --nolrs --bs=1024
-python3 main.py --model="resnet18" --nolrs --bs=512
-python3 main.py --model="resnet18" --nolrs --bs=256
-python3 main.py --model="resnet18" --nolrs --bs=128
+python3 main.py --model="moderatecnn" --bs=4096
+python3 main.py --model="simplecnn" --bs=4096
 
 echo "Shutdown Will Initiate In 60 seconds!"
 sleep 60
