@@ -40,7 +40,6 @@ def main():
     parser.add_argument('--resume', '-r', action='store_true', help='resume from checkpoint')
     args = parser.parse_args()
 
-    device = 'cuda' if torch.cuda.is_available() else 'cpu'
     start_epoch = 0  # start from epoch 0 or last checkpoint epoch
 
     params = {
@@ -71,11 +70,13 @@ def main():
     # https: // docs.nvidia.com / cuda / cublas / index.html  # cublasApi_reproducibility
     # torch.use_deterministic_algorithms(True) # This includes the above
 
+    rng = np.random.default_rng(42)
+
     dataloader_kwargs = {
         "batch_size": params["bs"],
         "drop_last": False,
         "num_workers": 2,
-        "shuffle": True,
+        "shuffle": False,
         "worker_init_fn": _seed_worker,
     }
 
@@ -120,13 +121,15 @@ def main():
         ]
     )
 
-    trainset = torchvision.datasets.CIFAR10(root='./data', train=True, download=True, transform=transform_train)
-    dataloader_kwargs["shuffle"] = False
-    trainloader = torch.utils.data.DataLoader(Subset(trainset, range(0, 40000)), **dataloader_kwargs)
+    train_dataset = torchvision.datasets.CIFAR10(root='./data', train=True, download=True, transform=transform_train)
+    train_indexes = np.arange(0, 40000)
+    rng.shuffle(train_indexes)
+    train_loader = torch.utils.data.DataLoader(Subset(train_dataset, train_indexes), **dataloader_kwargs)
 
-    testset = torchvision.datasets.CIFAR10(root='./data', train=True, download=False, transform=transform_test)
-    dataloader_kwargs["shuffle"] = False
-    testloader = torch.utils.data.DataLoader(Subset(testset, range(40000, 50000)), **dataloader_kwargs)
+    test_dataset = torchvision.datasets.CIFAR10(root='./data', train=True, download=False, transform=transform_test)
+    test_indexes = np.arange(40000, 50000)
+    rng.shuffle(test_indexes)
+    test_loader = torch.utils.data.DataLoader(Subset(test_dataset, test_indexes), **dataloader_kwargs)
 
     # Model
     print(f'==> Building model {args.model}..')
@@ -197,8 +200,8 @@ def main():
         scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=params["epochs"])
 
     for epoch in range(start_epoch, start_epoch + params["epochs"]):
-        train(run, epoch, device, trainloader, net, criterion, optimizer)
-        test(run, epoch, device, testloader, net, criterion)
+        train(run, epoch, device, train_loader, net, criterion, optimizer)
+        test(run, epoch, device, test_loader, net, criterion)
         if not args.nolrs:
             scheduler.step()
 
