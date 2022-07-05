@@ -194,7 +194,8 @@ def main():
         start_epoch = checkpoint['epoch']
 
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.SGD(net.parameters(), lr=params["lr"], momentum=0.9, weight_decay=5e-4)
+    # optimizer = optim.SGD(net.parameters(), lr=params["lr"], momentum=0.9, weight_decay=5e-4)
+    optimizer = optim.Adam(net.parameters(), lr=params["lr"]) # , weight_decay=5e-4)
     if not args.nolrs:
         print("Will use the CosineAnnealingLR learning rate scheduler")
         scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=params["epochs"])
