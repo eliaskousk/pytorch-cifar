@@ -123,12 +123,12 @@ def main():
 
     train_dataset = torchvision.datasets.CIFAR10(root='./data', train=True, download=True, transform=transform_train)
     train_indexes = np.arange(0, 40000)
-    rng.shuffle(train_indexes)
+    # rng.shuffle(train_indexes)
     train_loader = torch.utils.data.DataLoader(Subset(train_dataset, train_indexes), **dataloader_kwargs)
 
     test_dataset = torchvision.datasets.CIFAR10(root='./data', train=True, download=False, transform=transform_test)
     test_indexes = np.arange(40000, 50000)
-    rng.shuffle(test_indexes)
+    # rng.shuffle(test_indexes)
     test_loader = torch.utils.data.DataLoader(Subset(test_dataset, test_indexes), **dataloader_kwargs)
 
     # Model
