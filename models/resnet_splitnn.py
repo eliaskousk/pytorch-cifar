@@ -157,15 +157,13 @@ def ResNet18Front(num_channels=1, num_features=1, num_parts=1, load=False, freez
         [2, 2, 2, 2],
         num_channels=num_channels,
         num_features=num_features,
-        num_parts=num_parts,
-        load=load,
-        freeze=freeze,
+        num_parts=num_parts
     )
 
 
 def ResNet18Center(num_channels=1, num_features=1, num_parts=1, load=False, freeze=False):
     return ResNetCenter(
-        BasicBlock, num_channels=num_channels, num_features=num_features, num_parts=num_parts, load=load, freeze=freeze
+        BasicBlock, num_channels=num_channels, num_features=num_features, num_parts=num_parts
     )
 
 
@@ -175,9 +173,7 @@ def ResNet18Back(num_channels=1, num_features=1, num_parts=1, load=False, freeze
         num_classes=10,
         num_channels=num_channels,
         num_features=num_features,
-        num_parts=num_parts,
-        load=load,
-        freeze=freeze,
+        num_parts=num_parts
     )
 
 
