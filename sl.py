@@ -235,7 +235,8 @@ def test_server(model, device, testloader_iter, criterion, activations):
         activations = torch.from_numpy(activations)
         activations = activations.to(device)
 
-        target = next(testloader_iter).to(device)
+        _, target = next(testloader_iter)
+        target = target.to(device)
         outputs = model(activations)
         loss = criterion(outputs, target)
 
