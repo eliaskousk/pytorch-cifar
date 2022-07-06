@@ -225,7 +225,7 @@ def test_server(model, device, testloader_iter, criterion, activations):
     model.eval()
 
     with torch.no_grad():
-        activations = torch.from_numpy(activations)
+        # activations = torch.from_numpy(activations)
         activations = activations.to(device)
 
         target = next(testloader_iter).to(device)
