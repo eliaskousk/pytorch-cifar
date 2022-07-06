@@ -64,6 +64,7 @@ def create_model_client(device, use_cuda):
         torch.cuda.manual_seed_all(42)
 
     model_client = ResNet18Front().to(device)
+    # model_client = SimpleCNNFront().to(device)
     optimizer_client = optim.SGD(model_client.parameters(), lr=LR, momentum=MOMENTUM, weight_decay=WEIGHT_DECAY)
 
     return model_client, optimizer_client
@@ -74,6 +75,7 @@ def create_model_server(device, use_cuda):
         torch.cuda.manual_seed_all(42)
 
     model_server = ResNet18Back().to(device)
+    # model_server = SimpleCNNBack().to(device)
     optimizer_server = optim.SGD(model_server.parameters(), lr=LR, momentum=MOMENTUM, weight_decay=WEIGHT_DECAY)
 
     # TODO: Use Adam with StepLR
@@ -123,7 +125,8 @@ def create_data_loaders(dataloader_kwargs):
     # Train
     # =====
 
-    trainset = torchvision.datasets.CIFAR10(root='./data', train=True, download=True, transform=train_transform)
+    trainset_client = torchvision.datasets.CIFAR10(root='./data', train=True, download=True, transform=train_transform)
+    trainset_server = torchvision.datasets.CIFAR10(root='./data', train=True, download=True, transform=train_transform)
     # all_data = []
     # all_targets = []
     # for d, t in sub:
@@ -137,7 +140,8 @@ def create_data_loaders(dataloader_kwargs):
     # trainset_client = SplitImageDataset(data=all_data)
     # g = torch.Generator()
     # g.manual_seed(42)
-    trainloader_client = torch.utils.data.DataLoader(Subset(trainset, np.arange(0, 40000)), **dataloader_kwargs)
+    trainset_client_sub = Subset(trainset_client, np.arange(0, 40000))
+    trainloader_client = torch.utils.data.DataLoader(trainset_client_sub, **dataloader_kwargs)
     trainloader_iter_client = iter(cycle(trainloader_client))
 
     # Server Train
@@ -145,14 +149,16 @@ def create_data_loaders(dataloader_kwargs):
     # trainset_server = SplitImageDataset(targets=all_targets)
     # g = torch.Generator()
     # g.manual_seed(42)
-    trainloader_server = torch.utils.data.DataLoader(Subset(trainset, np.arange(0, 40000)), **dataloader_kwargs)
+    trainset_server_sub = Subset(trainset_client, np.arange(0, 40000))
+    trainloader_server = torch.utils.data.DataLoader(trainset_server_sub, **dataloader_kwargs)
     trainloader_iter_server = iter(cycle(trainloader_server))
 
     # ====
     # Test
     # ====
 
-    testset = torchvision.datasets.CIFAR10(root='./data', train=True, download=True, transform=test_transform)
+    testset_client = torchvision.datasets.CIFAR10(root='./data', train=True, download=True, transform=test_transform)
+    testset_server = torchvision.datasets.CIFAR10(root='./data', train=True, download=True, transform=test_transform)
     # all_data = []
     # all_targets = []
     # for d, t in sub:
@@ -163,12 +169,14 @@ def create_data_loaders(dataloader_kwargs):
 
     # Clients Test
     # testset_client = SplitImageDataset(data=all_data)
-    testloader_client = torch.utils.data.DataLoader(Subset(testset, np.arange(40000, 50000)), **dataloader_kwargs)
+    testset_client_sub = Subset(testset_client, np.arange(40000, 50000))
+    testloader_client = torch.utils.data.DataLoader(testset_client_sub, **dataloader_kwargs)
     testloader_iter_client = iter(cycle(testloader_client))
 
     # Server Test
     # testset_server = SplitImageDataset(targets=all_targets)
-    testloader_server = torch.utils.data.DataLoader(Subset(testset, np.arange(40000, 50000)), **dataloader_kwargs)
+    testset_server_sub = Subset(testset_client, np.arange(40000, 50000))
+    testloader_server = torch.utils.data.DataLoader(testset_server_sub, **dataloader_kwargs)
     testloader_iter_server = iter(cycle(testloader_server))
 
     return (
@@ -184,7 +192,8 @@ def forward_client(model, device, trainloader_iter, optimizer=None):
         model.train()
     else:
         model.eval()
-    data = next(trainloader_iter).to(device)
+    data, _ = next(trainloader_iter)
+    data = data.to(device)
     if optimizer:
         optimizer.zero_grad()
     activations = model(data)
@@ -205,7 +214,8 @@ def train_server(model, device, trainloader_iter, optimizer, criterion, activati
     activations.requires_grad = True
     activations.retain_grad()
 
-    target = next(trainloader_iter).to(device)
+    _, target = next(trainloader_iter)
+    target = target.to(device)
     optimizer.zero_grad()
     outputs = model(activations)
     loss = criterion(outputs, target)
