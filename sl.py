@@ -190,11 +190,11 @@ def forward_client(model, device, trainloader_iter, optimizer=None):
     if optimizer:
         optimizer.zero_grad()
     activations = model(data)
-    return activations, activations.detach().cpu() # .numpy()
+    return activations, activations.detach().cpu().numpy()
 
 
 def backward_client(device, optimizer, activations, gradients):
-    # gradients = torch.from_numpy(gradients)
+    gradients = torch.from_numpy(gradients)
     gradients = gradients.to(device)
     activations.backward(gradients)
     optimizer.step()
@@ -203,8 +203,7 @@ def backward_client(device, optimizer, activations, gradients):
 def train_server(model, device, trainloader_iter, optimizer, criterion, activations):
     model.train()
 
-    # activations = torch.from_numpy(activations)
-    activations = activations.to(device)
+    activations = torch.from_numpy(activations).to(device)
     activations.requires_grad = True
     activations.retain_grad()
 
@@ -218,14 +217,14 @@ def train_server(model, device, trainloader_iter, optimizer, criterion, activati
     # _, pred = outputs.max(1)
     pred = outputs.argmax(dim=1, keepdim=True)
 
-    return target, pred, loss.item(), activations.grad.detach().cpu() # .numpy()
+    return target, pred, loss.item(), activations.grad.detach().cpu().numpy()
 
 
 def test_server(model, device, testloader_iter, criterion, activations):
     model.eval()
 
     with torch.no_grad():
-        # activations = torch.from_numpy(activations)
+        activations = torch.from_numpy(activations)
         activations = activations.to(device)
 
         target = next(testloader_iter).to(device)
@@ -436,7 +435,7 @@ def main():
         capture_stdout=False,
         capture_stderr=False
     )
-
+    
     neptune_run["parameters"] = params
 
     wandb.init(project="CIFAR-10-Standalone", name="CIFAR-10 - Standalone", entity="elias-manolakos-flai")
