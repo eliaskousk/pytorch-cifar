@@ -124,28 +124,28 @@ def create_data_loaders(dataloader_kwargs):
     # =====
 
     trainset = torchvision.datasets.CIFAR10(root='./data', train=True, download=True, transform=train_transform)
-    sub = Subset(trainset, np.arange(0, 40000))
-    all_data = []
-    all_targets = []
-    for d, t in sub:
-        all_data.append(d)
-        all_targets.append(torch.tensor(t))
-    all_data = torch.stack(all_data)
-    all_targets = torch.stack(all_targets)
+    # all_data = []
+    # all_targets = []
+    # for d, t in sub:
+    #     all_data.append(d)
+    #     all_targets.append(torch.tensor(t))
+    # all_data = torch.stack(all_data)
+    # all_targets = torch.stack(all_targets)
 
     # Clients Train
 
-    trainset_client = SplitImageDataset(data=all_data)
-    g = torch.Generator()
-    g.manual_seed(42)
-    trainloader_client = torch.utils.data.DataLoader(trainset_client.data, generator=g, **dataloader_kwargs)
+    # trainset_client = SplitImageDataset(data=all_data)
+    # g = torch.Generator()
+    # g.manual_seed(42)
+    trainloader_client = torch.utils.data.DataLoader(Subset(trainset, np.arange(0, 40000)), **dataloader_kwargs)
     trainloader_iter_client = iter(cycle(trainloader_client))
 
     # Server Train
-    trainset_server = SplitImageDataset(targets=all_targets)
-    g = torch.Generator()
-    g.manual_seed(42)
-    trainloader_server = torch.utils.data.DataLoader(trainset_server.targets, generator=g, **dataloader_kwargs)
+
+    # trainset_server = SplitImageDataset(targets=all_targets)
+    # g = torch.Generator()
+    # g.manual_seed(42)
+    trainloader_server = torch.utils.data.DataLoader(Subset(trainset, np.arange(0, 40000)), **dataloader_kwargs)
     trainloader_iter_server = iter(cycle(trainloader_server))
 
     # ====
@@ -153,24 +153,22 @@ def create_data_loaders(dataloader_kwargs):
     # ====
 
     testset = torchvision.datasets.CIFAR10(root='./data', train=True, download=True, transform=test_transform)
-
-    sub = Subset(testset, np.arange(40000, 50000))
-    all_data = []
-    all_targets = []
-    for d, t in sub:
-        all_data.append(d)
-        all_targets.append(torch.tensor(t))
-    all_data = torch.stack(all_data)
-    all_targets = torch.stack(all_targets)
+    # all_data = []
+    # all_targets = []
+    # for d, t in sub:
+    #     all_data.append(d)
+    #     all_targets.append(torch.tensor(t))
+    # all_data = torch.stack(all_data)
+    # all_targets = torch.stack(all_targets)
 
     # Clients Test
-    testset_client = SplitImageDataset(data=all_data)
-    testloader_client = torch.utils.data.DataLoader(testset_client.data, **dataloader_kwargs)
+    # testset_client = SplitImageDataset(data=all_data)
+    testloader_client = torch.utils.data.DataLoader(Subset(testset, np.arange(40000, 50000)), **dataloader_kwargs)
     testloader_iter_client = iter(cycle(testloader_client))
 
     # Server Test
-    testset_server = SplitImageDataset(targets=all_targets)
-    testloader_server = torch.utils.data.DataLoader(testset_server.targets, **dataloader_kwargs)
+    # testset_server = SplitImageDataset(targets=all_targets)
+    testloader_server = torch.utils.data.DataLoader(Subset(testset, np.arange(40000, 50000)), **dataloader_kwargs)
     testloader_iter_server = iter(cycle(testloader_server))
 
     return (
@@ -435,7 +433,7 @@ def main():
         capture_stdout=False,
         capture_stderr=False
     )
-    
+
     neptune_run["parameters"] = params
 
     wandb.init(project="CIFAR-10-Standalone", name="CIFAR-10 - Standalone", entity="elias-manolakos-flai")
