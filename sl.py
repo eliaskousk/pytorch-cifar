@@ -160,7 +160,7 @@ def create_data_loaders(test_kwargs, train_kwargs):
     # Train
     # =====
 
-    trainset = torchvision.datasets.CIFAR10(root='/tmp/cifar10_data', train=True, download=True, transform=train_transform)
+    trainset = torchvision.datasets.CIFAR10(root='./data', train=True, download=True, transform=train_transform)
     sub = Subset(trainset, np.arange(0, 40000))
     all_data = []
     all_targets = []
@@ -189,7 +189,7 @@ def create_data_loaders(test_kwargs, train_kwargs):
     # Test
     # ====
 
-    testset = torchvision.datasets.CIFAR10(root='/tmp/cifar10_data', train=True, download=True, transform=test_transform)
+    testset = torchvision.datasets.CIFAR10(root='./data', train=True, download=True, transform=test_transform)
 
     sub = Subset(testset, np.arange(40000, 50000))
     all_data = []
