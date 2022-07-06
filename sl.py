@@ -369,13 +369,6 @@ def test(device,
 
 
 def main():
-    neptune_run = neptune.init(
-        project="eliaskousk/CIFAR10-Standalone",
-        api_token="eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLm5lcHR1bmUuYWkiLCJhcGlfdXJsIjoiaHR0cHM6Ly9hcHAubmVwdHVuZS5haSIsImFwaV9rZXkiOiIwMzRhZmQ3YS05OWFlLTQ2ODUtYTMwYS1kYmZlMTg5NGQwMDIifQ==",
-        capture_stdout=False,
-        capture_stderr=False
-    )
-
     parser = argparse.ArgumentParser(description='PyTorch CIFAR10 Standalone Training')
     parser.add_argument('--model', default="resnet18", type=str, help='model')
     parser.add_argument('--epochs', default=200, type=int, help='epochs')
@@ -392,7 +385,6 @@ def main():
         "use lr scheduler": not args.nolrs,
         "num_classes": 10,
     }
-    neptune_run["parameters"] = params
 
     use_cuda = CUDA and torch.cuda.is_available()
     device = torch.device("cuda" if use_cuda else "cpu")
@@ -436,6 +428,15 @@ def main():
     model_client, optimizer_client = create_model_client(device, use_cuda)
     model_server, optimizer_server = create_model_server(device, use_cuda)
     criterion = nn.CrossEntropyLoss()
+
+    neptune_run = neptune.init(
+        project="eliaskousk/CIFAR10-Standalone",
+        api_token="eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLm5lcHR1bmUuYWkiLCJhcGlfdXJsIjoiaHR0cHM6Ly9hcHAubmVwdHVuZS5haSIsImFwaV9rZXkiOiIwMzRhZmQ3YS05OWFlLTQ2ODUtYTMwYS1kYmZlMTg5NGQwMDIifQ==",
+        capture_stdout=False,
+        capture_stderr=False
+    )
+    
+    neptune_run["parameters"] = params
 
     wandb.init(project="CIFAR-10-Standalone", name="CIFAR-10 - Standalone", entity="elias-manolakos-flai")
 
