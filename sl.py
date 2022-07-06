@@ -10,6 +10,8 @@ import torchvision.transforms as transforms
 from torch.utils.data import Dataset, Subset
 import wandb
 
+from models import *
+
 # import yappi
 # import os
 # import time
@@ -60,7 +62,7 @@ class SplitImageDataset(Dataset):
             return 0
 
 
-class SimplePlusClientCNN(nn.Module):
+class SimpleCNNFront(nn.Module):
     def __init__(self):
         super().__init__()
         self.conv1 = nn.Conv2d(3, 32, 3)
@@ -83,7 +85,7 @@ class SimplePlusClientCNN(nn.Module):
         return x
 
 
-class SimplePlusServerCNN(nn.Module):
+class SimpleCNNBack(nn.Module):
     def __init__(self):
         super().__init__()
         self.fc2 = nn.Linear(128, 10)
@@ -98,7 +100,7 @@ def create_model_client(device, use_cuda):
     if use_cuda:
         torch.cuda.manual_seed_all(42)
 
-    model_client = SimplePlusClientCNN().to(device)
+    model_client = ResNet18Front().to(device)
     optimizer_client = optim.SGD(model_client.parameters(), lr=LR, momentum=MOMENTUM, weight_decay=WEIGHT_DECAY)
 
     return model_client, optimizer_client
@@ -108,7 +110,7 @@ def create_model_server(device, use_cuda):
     if use_cuda:
         torch.cuda.manual_seed_all(42)
 
-    model_server = SimplePlusServerCNN().to(device)
+    model_server = ResNet18Back().to(device)
     optimizer_server = optim.SGD(model_server.parameters(), lr=LR, momentum=MOMENTUM, weight_decay=WEIGHT_DECAY)
 
     # TODO: Use Adam with StepLR

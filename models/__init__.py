@@ -17,3 +17,4 @@ from .regnet import *
 from .dla_simple import *
 from .dla import *
 from .simple import *
+from .resnet_splitnn import *
