@@ -1,20 +1,16 @@
+import argparse
 import random
-import math
 import numpy as np
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
+
 import torch.optim as optim
 import torchvision
 import torchvision.transforms as transforms
 from torch.utils.data import Dataset, Subset
+
 import wandb
+import neptune.new as neptune
 
 from models import *
-
-# import yappi
-# import os
-# import time
 
 # from torch.optim.lr_scheduler import StepLR
 
@@ -62,39 +58,6 @@ class SplitImageDataset(Dataset):
             return 0
 
 
-class SimpleCNNFront(nn.Module):
-    def __init__(self):
-        super().__init__()
-        self.conv1 = nn.Conv2d(3, 32, 3)
-        self.conv2 = nn.Conv2d(32, 64, 3)
-        self.dropout1 = nn.Dropout(0.25)
-        self.dropout2 = nn.Dropout(0.5)
-        self.fc1 = nn.Linear(64 * 14 * 14, 128)
-
-    def forward(self, x):
-        x = self.conv1(x)
-        x = F.relu(x)
-        x = self.conv2(x)
-        x = F.relu(x)
-        x = F.max_pool2d(x, 2)
-        x = self.dropout1(x)
-        x = torch.flatten(x, 1)
-        x = self.fc1(x)
-        x = F.relu(x)
-        x = self.dropout2(x)
-        return x
-
-
-class SimpleCNNBack(nn.Module):
-    def __init__(self):
-        super().__init__()
-        self.fc2 = nn.Linear(128, 10)
-
-    def forward(self, x):
-        output = self.fc2(x)
-        return output
-
-
 def create_model_client(device, use_cuda):
     torch.manual_seed(42)
     if use_cuda:
@@ -130,7 +93,7 @@ def seed_worker(worker_id):
     random.seed(worker_seed)
 
 
-def create_data_loaders(test_kwargs, train_kwargs):
+def create_data_loaders(dataloader_kwargs):
     train_transform = transforms.Compose(
         [
             transforms.ToTensor(),
@@ -175,14 +138,14 @@ def create_data_loaders(test_kwargs, train_kwargs):
     trainset_client = SplitImageDataset(data=all_data)
     g = torch.Generator()
     g.manual_seed(42)
-    trainloader_client = torch.utils.data.DataLoader(trainset_client.data, generator=g, **train_kwargs)
+    trainloader_client = torch.utils.data.DataLoader(trainset_client.data, generator=g, **dataloader_kwargs)
     trainloader_iter_client = iter(cycle(trainloader_client))
 
     # Server Train
     trainset_server = SplitImageDataset(targets=all_targets)
     g = torch.Generator()
     g.manual_seed(42)
-    trainloader_server = torch.utils.data.DataLoader(trainset_server.targets, generator=g, **train_kwargs)
+    trainloader_server = torch.utils.data.DataLoader(trainset_server.targets, generator=g, **dataloader_kwargs)
     trainloader_iter_server = iter(cycle(trainloader_server))
 
     # ====
@@ -202,16 +165,12 @@ def create_data_loaders(test_kwargs, train_kwargs):
 
     # Clients Test
     testset_client = SplitImageDataset(data=all_data)
-    g = torch.Generator()
-    g.manual_seed(0)
-    testloader_client = torch.utils.data.DataLoader(testset_client.data, generator=g, **test_kwargs)
+    testloader_client = torch.utils.data.DataLoader(testset_client.data, **dataloader_kwargs)
     testloader_iter_client = iter(cycle(testloader_client))
 
     # Server Test
     testset_server = SplitImageDataset(targets=all_targets)
-    g = torch.Generator()
-    g.manual_seed(0)
-    testloader_server = torch.utils.data.DataLoader(testset_server.targets, generator=g, **test_kwargs)
+    testloader_server = torch.utils.data.DataLoader(testset_server.targets, **dataloader_kwargs)
     testloader_iter_server = iter(cycle(testloader_server))
 
     return (
@@ -410,27 +369,69 @@ def test(device,
 
 
 def main():
-    # yappi.set_clock_type("cpu")  # Use set_clock_type("wall") for wall time
-    # yappi.start()
-    torch.manual_seed(42)
+    neptune_run = neptune.init(
+        project="eliaskousk/CIFAR10-Standalone",
+        api_token="eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLm5lcHR1bmUuYWkiLCJhcGlfdXJsIjoiaHR0cHM6Ly9hcHAubmVwdHVuZS5haSIsImFwaV9rZXkiOiIwMzRhZmQ3YS05OWFlLTQ2ODUtYTMwYS1kYmZlMTg5NGQwMDIifQ==",
+        capture_stdout=False,
+        capture_stderr=False
+    )
+
+    parser = argparse.ArgumentParser(description='PyTorch CIFAR10 Standalone Training')
+    parser.add_argument('--model', default="resnet18", type=str, help='model')
+    parser.add_argument('--epochs', default=200, type=int, help='epochs')
+    parser.add_argument('--bs', default=4096, type=int, help='batch size')
+    parser.add_argument('--lr', default=0.1, type=float, help='learning rate')
+    parser.add_argument('--nolrs', '-nolrs', action='store_true', help='do not use the learning rate scheduler')
+    args = parser.parse_args()
+
+    params = {
+        "model": args.model,
+        "epochs": args.epochs,
+        "bs": args.bs,
+        "lr": args.lr,
+        "use lr scheduler": not args.nolrs,
+        "num_classes": 10,
+    }
+    neptune_run["parameters"] = params
+
     use_cuda = CUDA and torch.cuda.is_available()
     device = torch.device("cuda" if use_cuda else "cpu")
 
-    train_kwargs = {"batch_size": TRAIN_BS, "num_workers": 2, "shuffle": TRAIN_SHUFFLE, "worker_init_fn": seed_worker}
-    test_kwargs = {"batch_size": TEST_BS, "num_workers": 2, "shuffle": TEST_SHUFFLE, "worker_init_fn": seed_worker}
+    # export PYTHONHASHSEED=0
+    random.seed(42)
+    np.random.seed(42)
+    torch.manual_seed(42)
+    if use_cuda:
+        torch.cuda.manual_seed(42)
+        torch.cuda.manual_seed_all(42)  # Multi-GPU
+
+    # https://pytorch.org/docs/stable/notes/randomness.html
+    # torch.backends.cudnn.benchmark = False
+    torch.backends.cudnn.deterministic = True
+    # To enable the below add CUBLAS_WORKSPACE_CONFIG=:4096:8 environment variable
+    # https: // docs.nvidia.com / cuda / cublas / index.html  # cublasApi_reproducibility
+    # torch.use_deterministic_algorithms(True) # This includes the above
+
+    rng = np.random.default_rng(42)
+
+    dataloader_kwargs = {
+        "batch_size": params["bs"],
+        "drop_last": False,
+        "num_workers": 2,
+        "shuffle": False,
+        "worker_init_fn": seed_worker,
+    }
 
     if use_cuda:
-        torch.cuda.manual_seed_all(42)
         cuda_kwargs = {"pin_memory": True}
-        train_kwargs.update(cuda_kwargs)
-        test_kwargs.update(cuda_kwargs)
+        dataloader_kwargs.update(cuda_kwargs)
 
     (
         trainloader_iter_client,
         trainloader_iter_server,
         testloader_iter_client,
         testloader_iter_server,
-    ) = create_data_loaders(train_kwargs, test_kwargs)
+    ) = create_data_loaders(dataloader_kwargs)
 
     model_client, optimizer_client = create_model_client(device, use_cuda)
     model_server, optimizer_server = create_model_server(device, use_cuda)
@@ -463,17 +464,19 @@ def main():
             testloader_iter_server
         )
 
+        neptune_run["train/epoch/loss"].log(train_metrics["train/epoch/loss"])
+        neptune_run["train/epoch/accuracy"].log(train_metrics["train/epoch/accuracy"])
+        neptune_run["train/epoch/epoch"].log(train_metrics["train/epoch/epoch"])
+
+        neptune_run["test/epoch/loss"].log(test_metrics["test/epoch/loss"])
+        neptune_run["test/epoch/accuracy"].log(test_metrics["test/epoch/accuracy"])
+        neptune_run["test/epoch/epoch"].log(test_metrics["test/epoch/epoch"])
+
         wandb.log({**train_metrics, **test_metrics})
 
         # scheduler.step()
 
     wandb.finish()
-
-    # yappi.stop()
-    # profile_path = os.path.join("./", "yappi_mnist_splitnn_{}.pstat".format(time.time()))
-    # yappi.get_func_stats().save(profile_path, type="pstat") # print_all()
-    # yappi.get_func_stats().print_all()
-    # yappi.get_thread_stats().print_all()
 
 
 if __name__ == "__main__":
