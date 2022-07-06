@@ -18,7 +18,7 @@ TRAIN_SUBSET = 40000
 TEST_SUBSET = 10000
 TRAIN_BS = 4096
 TEST_BS = 4096
-EPOCHS = 200
+EPOCHS = 300
 TRAIN_EPOCH_ROUNDS = math.ceil(TRAIN_SUBSET / TRAIN_BS)
 TEST_EPOCH_ROUNDS = math.ceil(TEST_SUBSET / TEST_BS)
 TRAIN_SHUFFLE = False
@@ -125,31 +125,15 @@ def create_data_loaders(dataloader_kwargs):
     # Train
     # =====
 
+    # Client Train
     trainset_client = torchvision.datasets.CIFAR10(root='./data', train=True, download=True, transform=train_transform)
-    trainset_server = torchvision.datasets.CIFAR10(root='./data', train=True, download=True, transform=train_transform)
-    # all_data = []
-    # all_targets = []
-    # for d, t in sub:
-    #     all_data.append(d)
-    #     all_targets.append(torch.tensor(t))
-    # all_data = torch.stack(all_data)
-    # all_targets = torch.stack(all_targets)
-
-    # Clients Train
-
-    # trainset_client = SplitImageDataset(data=all_data)
-    # g = torch.Generator()
-    # g.manual_seed(42)
     trainset_client_sub = Subset(trainset_client, np.arange(0, 40000))
     trainloader_client = torch.utils.data.DataLoader(trainset_client_sub, **dataloader_kwargs)
     trainloader_iter_client = iter(cycle(trainloader_client))
 
     # Server Train
-
-    # trainset_server = SplitImageDataset(targets=all_targets)
-    # g = torch.Generator()
-    # g.manual_seed(42)
-    trainset_server_sub = Subset(trainset_client, np.arange(0, 40000))
+    trainset_server = torchvision.datasets.CIFAR10(root='./data', train=True, download=True, transform=train_transform)
+    trainset_server_sub = Subset(trainset_server, np.arange(0, 40000))
     trainloader_server = torch.utils.data.DataLoader(trainset_server_sub, **dataloader_kwargs)
     trainloader_iter_server = iter(cycle(trainloader_server))
 
@@ -157,25 +141,15 @@ def create_data_loaders(dataloader_kwargs):
     # Test
     # ====
 
-    testset_client = torchvision.datasets.CIFAR10(root='./data', train=True, download=True, transform=test_transform)
-    testset_server = torchvision.datasets.CIFAR10(root='./data', train=True, download=True, transform=test_transform)
-    # all_data = []
-    # all_targets = []
-    # for d, t in sub:
-    #     all_data.append(d)
-    #     all_targets.append(torch.tensor(t))
-    # all_data = torch.stack(all_data)
-    # all_targets = torch.stack(all_targets)
-
     # Clients Test
-    # testset_client = SplitImageDataset(data=all_data)
+    testset_client = torchvision.datasets.CIFAR10(root='./data', train=True, download=True, transform=test_transform)
     testset_client_sub = Subset(testset_client, np.arange(40000, 50000))
     testloader_client = torch.utils.data.DataLoader(testset_client_sub, **dataloader_kwargs)
     testloader_iter_client = iter(cycle(testloader_client))
 
     # Server Test
-    # testset_server = SplitImageDataset(targets=all_targets)
-    testset_server_sub = Subset(testset_client, np.arange(40000, 50000))
+    testset_server = torchvision.datasets.CIFAR10(root='./data', train=True, download=True, transform=test_transform)
+    testset_server_sub = Subset(testset_server, np.arange(40000, 50000))
     testloader_server = torch.utils.data.DataLoader(testset_server_sub, **dataloader_kwargs)
     testloader_iter_server = iter(cycle(testloader_server))
 
