@@ -212,7 +212,8 @@ def forward_client(model, device, trainloader_iter, optimizer=None):
         model.train()
     else:
         model.eval()
-    data, _ = next(trainloader_iter)
+    # data, _ = next(trainloader_iter)
+    data = next(trainloader_iter)
     data = data.to(device)
     if optimizer:
         optimizer.zero_grad()
@@ -234,7 +235,8 @@ def train_server(model, device, trainloader_iter, optimizer, criterion, activati
     activations.requires_grad = True
     activations.retain_grad()
 
-    _, target = next(trainloader_iter)
+    # _, target = next(trainloader_iter)
+    target = next(trainloader_iter)
     target = target.to(device)
     optimizer.zero_grad()
     outputs = model(activations)
@@ -255,7 +257,8 @@ def test_server(model, device, testloader_iter, criterion, activations):
         activations = torch.from_numpy(activations)
         activations = activations.to(device)
 
-        _, target = next(testloader_iter)
+        # _, target = next(testloader_iter)
+        target = next(testloader_iter)
         target = target.to(device)
         outputs = model(activations)
         loss = criterion(outputs, target)
