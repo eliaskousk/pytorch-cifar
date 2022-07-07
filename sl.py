@@ -100,9 +100,9 @@ def create_data_loaders(dataloader_kwargs):
         [
             # transforms.ToTensor(),
             # transforms.ToPILImage(),
-            # transforms.Pad(4, padding_mode="reflect"),
-            # transforms.RandomCrop(32),
-            # transforms.RandomHorizontalFlip(),
+            transforms.Pad(4, padding_mode="reflect"),
+            transforms.RandomCrop(32),
+            transforms.RandomHorizontalFlip(),
             transforms.ToTensor(),
             transforms.Normalize(
                 mean=[x / 255.0 for x in [125.3, 123.0, 113.9]],
