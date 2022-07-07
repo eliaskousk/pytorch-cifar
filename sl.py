@@ -5,7 +5,7 @@ import numpy as np
 import torch.optim as optim
 import torchvision
 import torchvision.transforms as transforms
-from torch.utils.data import Dataset, Subset
+from torch.utils.data import Dataset, Subset, TensorDataset
 
 import wandb
 import neptune.new as neptune
@@ -165,12 +165,14 @@ def create_data_loaders(dataloader_kwargs):
 
     # Clients Train
 
-    trainset_client = SplitImageDataset(data=all_data)
+    # trainset_client = SplitImageDataset(data=all_data)
+    trainset_client = TensorDataset(all_data, all_targets)
     trainloader_client = torch.utils.data.DataLoader(trainset_client, **dataloader_kwargs)
     trainloader_iter_client = iter(cycle(trainloader_client))
 
     # Server Train
-    trainset_server = SplitImageDataset(targets=all_targets)
+    # trainset_server = SplitImageDataset(targets=all_targets)
+    trainset_server = TensorDataset(all_data, all_targets)
     trainloader_server = torch.utils.data.DataLoader(trainset_server, **dataloader_kwargs)
     trainloader_iter_server = iter(cycle(trainloader_server))
 
@@ -190,12 +192,14 @@ def create_data_loaders(dataloader_kwargs):
     all_targets = torch.stack(all_targets)
 
     # Clients Test
-    testset_client = SplitImageDataset(data=all_data)
+    # testset_client = SplitImageDataset(data=all_data)
+    testset_client = TensorDataset(all_data, all_targets)
     testloader_client = torch.utils.data.DataLoader(testset_client, **dataloader_kwargs)
     testloader_iter_client = iter(cycle(testloader_client))
 
     # Server Test
-    testset_server = SplitImageDataset(targets=all_targets)
+    # testset_server = SplitImageDataset(targets=all_targets)
+    testset_server = TensorDataset(all_data, all_targets)
     testloader_server = torch.utils.data.DataLoader(testset_server, **dataloader_kwargs)
     testloader_iter_server = iter(cycle(testloader_server))
 
