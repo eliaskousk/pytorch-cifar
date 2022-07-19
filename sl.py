@@ -1,5 +1,7 @@
 import argparse
 import random
+import time
+
 import numpy as np
 
 import torch.optim as optim
@@ -18,7 +20,7 @@ TRAIN_SUBSET = 40000
 TEST_SUBSET = 10000
 TRAIN_BS = 4096
 TEST_BS = 4096
-EPOCHS = 300
+EPOCHS = 50
 TRAIN_EPOCH_ROUNDS = math.ceil(TRAIN_SUBSET / TRAIN_BS)
 TEST_EPOCH_ROUNDS = math.ceil(TEST_SUBSET / TEST_BS)
 TRAIN_SHUFFLE = False
@@ -58,31 +60,51 @@ class SplitImageDataset(Dataset):
             return 0
 
 
-def create_model_client(device, use_cuda):
+def create_model_client(model_name, device, use_cuda):
     torch.manual_seed(42)
     if use_cuda:
         torch.cuda.manual_seed_all(42)
 
-    model_client = ResNet18Front().to(device)
-    # model_client = SimpleCNNFront().to(device)
-    optimizer_client = optim.SGD(model_client.parameters(), lr=LR, momentum=MOMENTUM, weight_decay=WEIGHT_DECAY)
+    if model_name == "simplecnn":
+        model = SimpleCNNFront().to(device)
+    elif model_name == "vgg19":
+        model = VGG19Front(3, 1024, 1, False).to(device)
+    elif model_name == "resnet18":
+        model = ResNet18Front(3, 1024, 1, False).to(device)
+    else:
+        print(f"Model {model_name} is not supported, will now exit.")
+        exit(0)
 
-    return model_client, optimizer_client
-
-def create_model_server(device, use_cuda):
-    torch.manual_seed(42)
-    if use_cuda:
-        torch.cuda.manual_seed_all(42)
-
-    model_server = ResNet18Back().to(device)
-    # model_server = SimpleCNNBack().to(device)
-    optimizer_server = optim.SGD(model_server.parameters(), lr=LR, momentum=MOMENTUM, weight_decay=WEIGHT_DECAY)
+    optimizer = optim.SGD(model.parameters(), lr=LR, momentum=MOMENTUM, weight_decay=WEIGHT_DECAY)
 
     # TODO: Use Adam with StepLR
     # optimizer = optim.Adam(model.parameters(), lr=LR)
     # scheduler = StepLR(optimizer, step_size=1, gamma=GAMMA)
 
-    return model_server, optimizer_server
+    return model, optimizer
+
+def create_model_server(model_name, device, use_cuda):
+    torch.manual_seed(42)
+    if use_cuda:
+        torch.cuda.manual_seed_all(42)
+
+    if model_name == "simplecnn":
+        model = SimpleCNNBack().to(device)
+    elif model_name == "vgg19":
+        model = VGG19Back(3, 1024, 1).to(device)
+    elif model_name == "resnet18":
+        model = ResNet18Back(3, 1024, 1).to(device)
+    else:
+        print(f"Model {model_name} is not supported, will now exit.")
+        exit(0)
+
+    optimizer = optim.SGD(model.parameters(), lr=LR, momentum=MOMENTUM, weight_decay=WEIGHT_DECAY)
+
+    # TODO: Use Adam with StepLR
+    # optimizer = optim.Adam(model.parameters(), lr=LR)
+    # scheduler = StepLR(optimizer, step_size=1, gamma=GAMMA)
+
+    return model, optimizer
 
 def cycle(iterable):
     while True:
@@ -295,6 +317,8 @@ def train(
     train_total = 0
     train_correct = 0
 
+    epoch_start_time = time.time()
+
     for flround in range(TRAIN_EPOCH_ROUNDS):
         activations, activations_detached = forward_client(model_client, device, trainloader_iter_client, optimizer_client)
 
@@ -328,9 +352,11 @@ def train(
 
     train_loss_average = train_loss_total / TRAIN_EPOCH_ROUNDS
 
+    epoch_total_time = time.time() - epoch_start_time
+
     print(
-        "EPOCH {} TRAIN - AVERAGE LOSS: {:.3f} - ACC: {}/{} ({:.1f}%)".format(
-            epoch + 1, train_loss_average, train_correct, train_total, 100.0 * train_acc
+        "EPOCH {} TRAIN - AVERAGE LOSS: {:.3f} - ACC: {}/{} ({:.1f}% - TIME: {:.3f})".format(
+            epoch + 1, train_loss_average, train_correct, train_total, 100.0 * train_acc, epoch_total_time
         )
     )
 
@@ -361,6 +387,8 @@ def test(device,
     correct_pred = {classname: 0 for classname in classes}
     total_pred = {classname: 0 for classname in classes}
 
+    epoch_start_time = time.time()
+
     for flround in range(TEST_EPOCH_ROUNDS):
         _, activations_detached = forward_client(model_client, device, testloader_iter_client)
 
@@ -390,11 +418,13 @@ def test(device,
                 correct_pred[classes[label]] += 1
             total_pred[classes[label]] += 1
 
+    epoch_total_time = time.time() - epoch_start_time
+
     test_loss_average = test_loss_total / TEST_EPOCH_ROUNDS
 
     print(
-        "EPOCH {} TEST - AVERAGE LOSS: {:.4f} - ACC: {}/{} ({:.1f}%)\n".format(
-            epoch + 1, test_loss_average, test_correct, test_total, 100.0 * test_acc
+        "EPOCH {} TEST - AVERAGE LOSS: {:.4f} - ACC: {}/{} ({:.1f}% - TIME {:.3f})\n".format(
+            epoch + 1, test_loss_average, test_correct, test_total, 100.0 * test_acc, epoch_total_time
         )
     )
 
@@ -413,9 +443,9 @@ def test(device,
 
 def main():
     parser = argparse.ArgumentParser(description='PyTorch CIFAR10 Standalone Training')
-    parser.add_argument('--model', default="resnet18", type=str, help='model')
-    parser.add_argument('--epochs', default=200, type=int, help='epochs')
-    parser.add_argument('--bs', default=4096, type=int, help='batch size')
+    parser.add_argument('--model', default="simplecnn", type=str, help='model')
+    parser.add_argument('--epochs', default=20, type=int, help='epochs')
+    parser.add_argument('--bs', default=256, type=int, help='batch size')
     parser.add_argument('--lr', default=0.1, type=float, help='learning rate')
     parser.add_argument('--nolrs', '-nolrs', action='store_true', help='do not use the learning rate scheduler')
     args = parser.parse_args()
@@ -468,8 +498,8 @@ def main():
         testloader_iter_server,
     ) = create_data_loaders(dataloader_kwargs)
 
-    model_client, optimizer_client = create_model_client(device, use_cuda)
-    model_server, optimizer_server = create_model_server(device, use_cuda)
+    model_client, optimizer_client = create_model_client(args.model, device, use_cuda)
+    model_server, optimizer_server = create_model_server(args.model, device, use_cuda)
     criterion = nn.CrossEntropyLoss()
 
     neptune_run = neptune.init(

@@ -1,12 +1,6 @@
 #!/usr/bin/env bash
 
-python3 main.py --model="vgg19" --nolrs --bs=4096
-#python3 main.py --model="vgg19" --nolrs --bs=2048
-#python3 main.py --model="vgg19" --nolrs --bs=1024
-
-python3 main.py --model="vgg19" --bs=4096
-#python3 main.py --model="vgg19" --bs=2048
-#python3 main.py --model="vgg19" --bs=1024
+python3 sl.py --model="vgg19" --nolrs --bs=4096
 
 echo "Shutdown Will Initiate In 60 seconds!"
 sleep 60
