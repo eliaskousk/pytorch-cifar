@@ -351,7 +351,7 @@ def train(
 
         batch_total_time = time.time() - batch_start_time
 
-        print(f"TRAIN BATCH {flround} TIME: {batch_total_time} - FRONT TIME: {front_total_time} - BACK TIME: {back_total_time}")
+        print(f"TRAIN BATCH {flround} TIME: {batch_total_time:0.3f} - FRONT TIME: {front_total_time:0.3f} - BACK TIME: {back_total_time:0.3f}")
 
         if (
             (flround % PRINT_ROUND_INTERVAL == PRINT_ROUND_INTERVAL - 1) or flround == TRAIN_EPOCH_ROUNDS - 1
@@ -431,7 +431,7 @@ def test(device,
 
         batch_total_time = time.time() - batch_start_time
 
-        print(f"TEST BATCH {flround} TIME: {batch_total_time} - FRONT TIME: {front_total_time} - BACK TIME: {back_total_time}")
+        print(f"TEST BATCH {flround} TIME: {batch_total_time:0.3f} - FRONT TIME: {front_total_time:0.3f} - BACK TIME: {back_total_time:0.3f}")
 
         if (
             (flround % PRINT_ROUND_INTERVAL == PRINT_ROUND_INTERVAL - 1) or flround == TEST_EPOCH_ROUNDS - 1
