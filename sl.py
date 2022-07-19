@@ -357,7 +357,7 @@ def train(
 
         batch_total_time = time.time() - batch_start_time
 
-        print(f"TRAIN BATCH {flround} TIME: {batch_total_time:.3f} - FRONT FW TIME: {front_total_time:.3f} - BACK TIME: {back_total_time:.3f} - FRONT BW TIME: {front_bw_total_time:.3f}")
+        print(f"TRAIN BATCH {flround} TIME: {batch_total_time:.3f} - FRONT FW TIME: {front_fw_total_time:.3f} - BACK TIME: {back_total_time:.3f} - FRONT BW TIME: {front_bw_total_time:.3f}")
 
         if (
             (flround % PRINT_ROUND_INTERVAL == PRINT_ROUND_INTERVAL - 1) or flround == TRAIN_EPOCH_ROUNDS - 1
