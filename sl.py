@@ -68,9 +68,9 @@ def create_model_client(model_name, device, use_cuda):
     if model_name == "simplecnn":
         model = SimpleCNNFront().to(device)
     elif model_name == "vgg19":
-        model = VGG19Front(3, 1024, 1, False).to(device)
+        model = VGG19Front(3, 1024, 1, True).to(device)
     elif model_name == "resnet18":
-        model = ResNet18Front(3, 1024, 1, False).to(device)
+        model = ResNet18Front(3, 1024, 1, True).to(device)
     else:
         print(f"Model {model_name} is not supported, will now exit.")
         exit(0)
@@ -91,7 +91,7 @@ def create_model_server(model_name, device, use_cuda):
     if model_name == "simplecnn":
         model = SimpleCNNBack().to(device)
     elif model_name == "vgg19":
-        model = VGG19Back(3, 1024, 1).to(device)
+        model = VGG19CenterBack(3, 1024, 1).to(device)
     elif model_name == "resnet18":
         model = ResNet18Back(3, 1024, 1).to(device)
     else:
