@@ -1,8 +1,6 @@
 import torch
 import torch.nn as nn
 
-from nvflare.app_common.app_constant import NetworkName
-
 
 cfg = {
     "VGG11": [64, "M", 128, "M", "C", 256, 256, "M", 512, 512, "M", 512, 512, "M"],
@@ -67,7 +65,6 @@ class VGGFront(nn.Module):
         self, vgg_name, num_channels=1, num_features=1, num_parts=1, with_center=False, load=False, freeze=False
     ):
         super().__init__()
-        self.name = NetworkName.FRONT_NETWORK
         self.with_center = with_center
         self.load = load
         self.freeze = freeze
@@ -105,7 +102,6 @@ class VGGCenter(nn.Module):
         self, vgg_name, num_channels=1, num_features=1, num_parts=1, with_center=False, load=False, freeze=False
     ):
         super().__init__()
-        self.name = NetworkName.CENTER_NETWORK
         self.load = load
         self.freeze = freeze
         self.features = self._make_layers(cfg[vgg_name])
@@ -150,7 +146,6 @@ class VGGBack(nn.Module):
         freeze=False,
     ):
         super().__init__()
-        self.name = NetworkName.BACK_NETWORK
         self.load = load
         self.freeze = freeze
         self.classifier = nn.Linear(512, num_classes)
