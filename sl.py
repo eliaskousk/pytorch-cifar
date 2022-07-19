@@ -320,6 +320,9 @@ def train(
     epoch_start_time = time.time()
 
     for flround in range(TRAIN_EPOCH_ROUNDS):
+
+        batch_start_time = time.time()
+
         activations, activations_detached = forward_client(model_client, device, trainloader_iter_client, optimizer_client)
 
         pred, target, loss, gradients = train_server(
@@ -337,6 +340,10 @@ def train(
         # train_correct += pred.eq(target).sum().item()
         train_correct += pred.eq(target.view_as(pred)).sum().item()
         train_acc = train_correct / train_total
+
+        batch_total_time = time.time() - batch_start_time
+
+        print(f"TRAIN BATCH {flround} TIME: {batch_total_time}")
 
         if (
             (flround % PRINT_ROUND_INTERVAL == PRINT_ROUND_INTERVAL - 1) or flround == TRAIN_EPOCH_ROUNDS - 1
@@ -390,6 +397,9 @@ def test(device,
     epoch_start_time = time.time()
 
     for flround in range(TEST_EPOCH_ROUNDS):
+
+        batch_start_time = time.time()
+
         _, activations_detached = forward_client(model_client, device, testloader_iter_client)
 
         pred, target, loss = test_server(
@@ -402,6 +412,10 @@ def test(device,
         # test_correct += predictions.eq(target).sum().item()
         test_correct += pred.eq(target.view_as(pred)).sum().item()
         test_acc = test_correct / TEST_SUBSET
+
+        batch_total_time = time.time() - batch_start_time
+
+        print(f"TEST BATCH {flround} TIME: {batch_total_time}")
 
         if (
             (flround % PRINT_ROUND_INTERVAL == PRINT_ROUND_INTERVAL - 1) or flround == TEST_EPOCH_ROUNDS - 1
