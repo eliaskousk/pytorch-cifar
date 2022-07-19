@@ -323,11 +323,11 @@ def train(
 
         batch_start_time = time.time()
 
-        front_start_time = time.time()
+        front_fw_start_time = time.time()
 
         activations, activations_detached = forward_client(model_client, device, trainloader_iter_client, optimizer_client)
 
-        front_total_time = time.time() - front_start_time
+        front_fw_total_time = time.time() - front_fw_start_time
 
         back_start_time = time.time()
 
@@ -342,6 +342,12 @@ def train(
 
         back_total_time = time.time() - back_start_time
 
+        front_bw_start_time = time.time()
+
+        backward_client(device, optimizer_client, activations, gradients)
+
+        front_bw_total_time = time.time() - front_bw_start_time
+
         train_loss_total += loss
         train_loss_running += loss
         train_total += target.size(0)
@@ -351,7 +357,7 @@ def train(
 
         batch_total_time = time.time() - batch_start_time
 
-        print(f"TRAIN BATCH {flround} TIME: {batch_total_time:0.3f} - FRONT TIME: {front_total_time:0.3f} - BACK TIME: {back_total_time:0.3f}")
+        print(f"TRAIN BATCH {flround} TIME: {batch_total_time:.3f} - FRONT FW TIME: {front_total_time:.3f} - BACK TIME: {back_total_time:.3f} - FRONT BW TIME: {front_bw_total_time:.3f}")
 
         if (
             (flround % PRINT_ROUND_INTERVAL == PRINT_ROUND_INTERVAL - 1) or flround == TRAIN_EPOCH_ROUNDS - 1
@@ -362,8 +368,6 @@ def train(
                 )
             )
             train_loss_running = 0.0
-
-        backward_client(device, optimizer_client, activations, gradients)
 
     train_loss_average = train_loss_total / TRAIN_EPOCH_ROUNDS
 
@@ -431,7 +435,7 @@ def test(device,
 
         batch_total_time = time.time() - batch_start_time
 
-        print(f"TEST BATCH {flround} TIME: {batch_total_time:0.3f} - FRONT TIME: {front_total_time:0.3f} - BACK TIME: {back_total_time:0.3f}")
+        print(f"TEST BATCH {flround} TIME: {batch_total_time:.3f} - FRONT TIME: {front_total_time:.3f} - BACK TIME: {back_total_time:.3f}")
 
         if (
             (flround % PRINT_ROUND_INTERVAL == PRINT_ROUND_INTERVAL - 1) or flround == TEST_EPOCH_ROUNDS - 1
